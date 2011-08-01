@@ -20,6 +20,7 @@ def process_messages(body):
         if message['data'] == 'quit':
             body.put("Server closed.")
             body.put(StopIteration)
+            break
 
         body.put("<div>%s</div>\n" % message['data'])
 

@@ -1,8 +1,7 @@
 from gevent import monkey
 monkey.patch_all()
 
-import time
-from gevent import Greenlet
+import gevent
 from gevent import pywsgi
 from gevent import queue
 import redis
@@ -12,9 +11,10 @@ def process_messages(body):
     server = redis.Redis(host='localhost', port=6379, db=0)
     client = server.pubsub()
     client.subscribe('messages')
+    messages = client.listen()
 
     while True:
-        message = client.listen().next()
+        message = messages.next()
         print "Saw: %s" % message['data']
 
         if message['data'] == 'quit':
@@ -22,7 +22,6 @@ def process_messages(body):
             body.put(StopIteration)
 
         body.put("<div>%s</div>\n" % message['data'])
-        time.sleep(1)
 
 
 def handle(environ, start_response):
@@ -30,7 +29,7 @@ def handle(environ, start_response):
     body = queue.Queue()
     body.put(' ' * 1000)
     body.put("<html><body><h1>Messages:</h1>")
-    g = Greenlet.spawn(process_messages, body)
+    g = gevent.spawn(process_messages, body)
     return body
 
 

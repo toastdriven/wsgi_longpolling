@@ -30,7 +30,7 @@ def handle(environ, start_response):
     body = queue.Queue()
     body.put(' ' * 1000)
     body.put("<html><body><h1>Messages:</h1>")
-    g = gevent.spawn(process_messages, body)
+    gevent.spawn(process_messages, body)
     return body
 
 
